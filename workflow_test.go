@@ -1,10 +1,8 @@
 package app
 
 import (
-	"testing"
 	"time"
-	"context"
-	"github.com/stretchr/testify/mock"
+
 	"github.com/stretchr/testify/suite"
 
 	"go.temporal.io/sdk/testsuite"
@@ -13,7 +11,7 @@ type UnitTestSuite struct {
 	suite.Suite
 	testsuite.WorkflowTestSuite
 
-	env *testsuite.TestWorkflowEnvironment
+	env *testsuite.TestWorkflowEnvironment 
 }
 
 func (s *UnitTestSuite) SetupTest() {
@@ -32,9 +30,25 @@ func (s *UnitTestSuite) Test_AddToCart() {
 		s.NoError(err)
 		err = res.Get(&cart)
 		s.NoError(err)
-		s.Equal(len(cart.Item), 0)
+		s.Equal(len(cart.Items), 0)
 
-		update := AddTo 
-	})
+		update := AddToCartSignal{
+			Route: RouteTypes.ADD_TO_CART,
+			Item: CartItem{ProductId: 1, Quantity: 1},
+		} 
+		s.env.SignalWorkflow(SignalChannels.ADD_TO_CART_CHANNEL, update)
+	}, time.Millisecond * 1)
+
+	s.env.RegisterDelayedCallback(func ()  {
+		res, err := s.env.QueryWorkflow("getCart")
+		s.NoError(err)
+		err = res.Get(&cart)
+		s.NoError(err)
+		s.Equal(1, len(cart.Items))
+	}, time.Microsecond * 2)
+
+	s.env.ExecuteWorkflow(CartWorkflow, cart)
+
+	s.True(s.env.IsWorkflowCompleted())
 }
 
