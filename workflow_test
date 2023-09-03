@@ -1,0 +1,25 @@
+package app
+
+import (
+	"testing"
+	"time"
+	"context"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
+
+	"go.temporal.io/sdk/testsuite"
+)
+type UnitTestSuite struct {
+	suite.Suite
+	testsuite.WorkflowTestSuite
+
+	env *testsuite.TestWorkflowEnvironment
+}
+
+func (s *UnitTestSuite) SetupTest() {
+	s.env = s.NewTestWorkflowEnvironment()
+}
+
+func (s *UnitTestSuite) AfterTest(suiteName, testName string) {
+	s.env.AssertExpectations(s.T())
+}
