@@ -23,3 +23,18 @@ func (s *UnitTestSuite) SetupTest() {
 func (s *UnitTestSuite) AfterTest(suiteName, testName string) {
 	s.env.AssertExpectations(s.T())
 }
+
+func (s *UnitTestSuite) Test_AddToCart() {
+	cart := CartState{Items: make([]CartItem, 0)}
+
+	s.env.RegisterDelayedCallback(func() {
+		res, err := s.env.QueryWorkflow("getCart")
+		s.NoError(err)
+		err = res.Get(&cart)
+		s.NoError(err)
+		s.Equal(len(cart.Item), 0)
+
+		update := AddTo 
+	})
+}
+
